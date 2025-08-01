@@ -1,7 +1,10 @@
+import 'package:campusconnect/UI/auth/loginpage.dart';
+import 'package:campusconnect/UI/splash/splashscreen.dart';
+import 'package:campusconnect/UI/widget/roundedbutton.dart';
 import 'package:device_preview/device_preview.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'app.dart';
+// import 'app.dart';
 
 void main() {
   runApp(const MyApp());
@@ -16,7 +19,7 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       locale: DevicePreview.locale(context),
       builder: DevicePreview.appBuilder,
-      home: App(),
+      home: LoginPage(),
       theme: ThemeData(useMaterial3: true).copyWith(
         appBarTheme: AppBarTheme(
           color: Color(0xFFFAFAFA),
