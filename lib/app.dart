@@ -1,8 +1,8 @@
-import 'package:campusconnect/directmessage/directmessagemain.dart';
-import 'package:campusconnect/gangs/gangsmain.dart';
-import 'package:campusconnect/homepage/homemain.dart';
-import 'package:campusconnect/searchpage/searchmain.dart';
-import 'package:campusconnect/swipmian.dart/swipmain.dart';
+import 'package:campusconnect/UI/directmessage/directmessagemain.dart';
+import 'package:campusconnect/UI/gangs/gangsmain.dart';
+import 'package:campusconnect/UI/homepage/homemain.dart';
+import 'package:campusconnect/UI/searchpage/searchmain.dart';
+import 'package:campusconnect/UI/swipmian.dart/swipmain.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 

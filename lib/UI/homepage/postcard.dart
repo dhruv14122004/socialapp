@@ -1,4 +1,4 @@
-import 'package:campusconnect/homepage/commentsection.dart';
+import 'package:campusconnect/UI/homepage/commentsection.dart';
 import 'package:campusconnect/mock_data/mock_post.dart';
 import 'package:flutter/material.dart';
 
