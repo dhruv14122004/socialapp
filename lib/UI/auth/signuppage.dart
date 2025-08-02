@@ -1,18 +1,23 @@
-import 'package:campusconnect/UI/auth/signuppage.dart';
+import 'package:campusconnect/UI/auth/loginpage.dart';
 import 'package:campusconnect/UI/widget/roundedbutton.dart';
+import 'package:campusconnect/utils/utils.dart';
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
-class LoginPage extends StatefulWidget {
-  const LoginPage({super.key});
+class Signuppage extends StatefulWidget {
+  const Signuppage({super.key});
 
   @override
-  State<LoginPage> createState() => _LoginPageState();
+  State<Signuppage> createState() => _SignuppageState();
 }
 
-class _LoginPageState extends State<LoginPage> {
+class _SignuppageState extends State<Signuppage> {
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
   final _formkey = GlobalKey<FormState>();
+  bool loading = false;
+
+  final FirebaseAuth _auth = FirebaseAuth.instance;
 
   @override
   void dispose() {
@@ -26,7 +31,7 @@ class _LoginPageState extends State<LoginPage> {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          "Login",
+          "Sign Up",
           style: TextStyle(
             color: Colors.white,
             fontSize: 24,
@@ -50,6 +55,7 @@ class _LoginPageState extends State<LoginPage> {
                   if (value == null || value.isEmpty) {
                     return "Enter Email";
                   }
+
                   return null;
                 },
                 controller: emailController,
@@ -111,9 +117,19 @@ class _LoginPageState extends State<LoginPage> {
               ),
               SizedBox(height: 40),
               Roundedbutton(
-                title: "Login",
+                title: "Sign Up",
                 ontap: () {
-                  if (_formkey.currentState!.validate()) {}
+                  if (_formkey.currentState!.validate()) {
+                     _auth
+                        .createUserWithEmailAndPassword(
+                          email: emailController.text.toString(),
+                          password: passwordController.text.toString(),
+                        )
+                        .then((value) {})
+                        .onError((error, stackTrace) {
+                          Utils().error(error.toString());
+                        });
+                  }
                 },
               ),
               SizedBox(height: 30),
@@ -122,7 +138,7 @@ class _LoginPageState extends State<LoginPage> {
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   Text(
-                    "Dont have an Account?",
+                    "Already have an Account?",
                     style: TextStyle(color: Colors.black),
                   ),
                   TextButton(
@@ -130,13 +146,13 @@ class _LoginPageState extends State<LoginPage> {
                       Navigator.of(context).pushReplacement(
                         MaterialPageRoute(
                           builder: (context) {
-                            return Signuppage();
+                            return LoginPage();
                           },
                         ),
                       );
                     },
                     child: Text(
-                      "Sign Up",
+                      "Login",
                       style: TextStyle(color: Colors.deepOrange),
                     ),
                   ),

@@ -1,13 +1,18 @@
 import 'package:campusconnect/UI/auth/loginpage.dart';
 import 'package:campusconnect/UI/splash/splashscreen.dart';
-import 'package:campusconnect/UI/widget/roundedbutton.dart';
 import 'package:device_preview/device_preview.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 // import 'app.dart';
 
-void main() {
-  runApp(const MyApp());
+import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
+void main() async{
+  WidgetsFlutterBinding.ensureInitialized();
+await Firebase.initializeApp(
+  options: DefaultFirebaseOptions.currentPlatform,
+);
+runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
@@ -19,7 +24,7 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       locale: DevicePreview.locale(context),
       builder: DevicePreview.appBuilder,
-      home: LoginPage(),
+      home: Splashscreen(),
       theme: ThemeData(useMaterial3: true).copyWith(
         appBarTheme: AppBarTheme(
           color: Color(0xFFFAFAFA),
