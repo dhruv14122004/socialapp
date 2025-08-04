@@ -118,16 +118,27 @@ class _SignuppageState extends State<Signuppage> {
               SizedBox(height: 40),
               Roundedbutton(
                 title: "Sign Up",
+                loading: loading,
                 ontap: () {
                   if (_formkey.currentState!.validate()) {
-                     _auth
+                    setState(() {
+                      loading = true;
+                    });
+                    _auth
                         .createUserWithEmailAndPassword(
                           email: emailController.text.toString(),
                           password: passwordController.text.toString(),
                         )
-                        .then((value) {})
+                        .then((value) {
+                          setState(() {
+                            loading = false;
+                          });
+                        })
                         .onError((error, stackTrace) {
                           Utils().error(error.toString());
+                          setState(() {
+                            loading = false;
+                          });
                         });
                   }
                 },
