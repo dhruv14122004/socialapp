@@ -1,8 +1,11 @@
+import 'package:campusconnect/UI/auth/loginpage.dart';
 import 'package:campusconnect/UI/directmessage/directmessagemain.dart';
 import 'package:campusconnect/UI/gangs/gangsmain.dart';
 import 'package:campusconnect/UI/homepage/homemain.dart';
 import 'package:campusconnect/UI/searchpage/searchmain.dart';
 import 'package:campusconnect/UI/swipmian.dart/swipmain.dart';
+import 'package:campusconnect/utils/utils.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
@@ -23,6 +26,7 @@ class _AppState extends State<App> {
     Searchmain(),
     Directmessagemain(),
   ];
+  final FirebaseAuth auth = FirebaseAuth.instance;
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -39,9 +43,24 @@ class _AppState extends State<App> {
             onPressed: () {},
             icon: Icon(Icons.notifications, size: 25),
           ),
+          IconButton(
+            onPressed: () {
+              auth.signOut().then((value) {
+                Utils().error("Logged Out");
+                Navigator.of(context).pushReplacement(
+                  MaterialPageRoute(
+                    builder: (context) {
+                      return LoginPage();
+                    },
+                  ),
+                );
+              });
+            },
+            icon: Icon(Icons.logout),
+          ),
         ],
         actionsPadding: EdgeInsets.symmetric(horizontal: 10),
-        title: Text("hotline", style: Theme.of(context).textTheme.titleLarge,),
+        title: Text("hotline", style: Theme.of(context).textTheme.titleLarge),
         centerTitle: true,
       ),
       body: Column(children: [Expanded(child: pages[currentpage])]),

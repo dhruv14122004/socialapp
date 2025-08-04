@@ -1,5 +1,8 @@
 import 'package:campusconnect/UI/auth/signuppage.dart';
 import 'package:campusconnect/UI/widget/roundedbutton.dart';
+import 'package:campusconnect/app.dart';
+import 'package:campusconnect/utils/utils.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 class LoginPage extends StatefulWidget {
@@ -10,9 +13,11 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
+  bool loading = false;
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
   final _formkey = GlobalKey<FormState>();
+  final FirebaseAuth _auth = FirebaseAuth.instance;
 
   @override
   void dispose() {
@@ -112,8 +117,37 @@ class _LoginPageState extends State<LoginPage> {
               SizedBox(height: 40),
               Roundedbutton(
                 title: "Login",
+                loading: loading,
                 ontap: () {
-                  if (_formkey.currentState!.validate()) {}
+                  if (_formkey.currentState!.validate()) {
+                    setState(() {
+                      loading = true;
+                    });
+                    _auth
+                        .signInWithEmailAndPassword(
+                          email: emailController.text.toString(),
+                          password: passwordController.text.toString(),
+                        )
+                        .then((value) {
+                          Utils().error(value.user!.email.toString());
+                          Navigator.of(context).pushReplacement(
+                            MaterialPageRoute(
+                              builder: (context) {
+                                return App();
+                              },
+                            ),
+                          );
+                          setState(() {
+                            loading = true;
+                          });
+                        })
+                        .onError((error, StackTrace) {
+                          Utils().error(error.toString());
+                          setState(() {
+                            loading = true;
+                          });
+                        });
+                  }
                 },
               ),
               SizedBox(height: 30),
