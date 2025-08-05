@@ -1,6 +1,6 @@
 import 'package:campusconnect/UI/auth/signuppage.dart';
+import 'package:campusconnect/UI/postpage/postmain.dart';
 import 'package:campusconnect/UI/widget/roundedbutton.dart';
-import 'package:campusconnect/app.dart';
 import 'package:campusconnect/utils/utils.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -133,7 +133,7 @@ class _LoginPageState extends State<LoginPage> {
                           Navigator.of(context).pushReplacement(
                             MaterialPageRoute(
                               builder: (context) {
-                                return App();
+                                return Postmain();
                               },
                             ),
                           );
