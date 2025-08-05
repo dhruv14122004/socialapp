@@ -1,4 +1,5 @@
 import 'package:campusconnect/UI/postpage/addpost.dart';
+import 'package:campusconnect/utils/utils.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_database/ui/firebase_animated_list.dart';
 import 'package:flutter/material.dart';
@@ -13,6 +14,7 @@ class Postmain extends StatefulWidget {
 class _SearchMainState extends State<Postmain> {
   final databaseref = FirebaseDatabase.instance.ref('posts');
   final searchfilter = TextEditingController();
+  final updatecontroller = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
@@ -63,11 +65,35 @@ class _SearchMainState extends State<Postmain> {
               query: databaseref,
               itemBuilder: (context, snapshot, animation, index) {
                 final title = snapshot.child('description').value.toString();
+                final id = snapshot.child('id').value.toString();
 
                 if (searchfilter.text.isEmpty) {
                   return ListTile(
-                    title: Text(snapshot.child('description').value.toString()),
-                    subtitle: Text(snapshot.child('id').value.toString()),
+                    title: Text(title),
+                    subtitle: Text(id),
+                    trailing: PopupMenuButton(
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      icon: Icon(Icons.more_vert),
+                      itemBuilder: (context) => [
+                        PopupMenuItem(
+                          child: ListTile(
+                            title: Text("Edit"),
+                            leading: Icon(Icons.edit),
+                            onTap: () {
+                              showMyDialog(title, id);
+                            },
+                          ),
+                        ),
+                        PopupMenuItem(
+                          child: ListTile(
+                            title: Text("Delete"),
+                            leading: Icon(Icons.delete),
+                          ),
+                        ),
+                      ],
+                    ),
                   );
                 } else if (title.toLowerCase().toString().contains(
                   searchfilter.text.toLowerCase().toString(),
@@ -98,6 +124,44 @@ class _SearchMainState extends State<Postmain> {
         foregroundColor: Colors.black,
         child: Icon(Icons.add),
       ),
+    );
+  }
+
+  Future<void> showMyDialog(String title, String id) async {
+    updatecontroller.text = title;
+
+    return showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          backgroundColor: Colors.grey,
+          title: Text("Update", style: TextStyle(fontWeight: FontWeight.bold)),
+          content: TextField(controller: updatecontroller),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: Text("Cancel"),
+            ),
+            TextButton(
+              onPressed: () {
+                databaseref
+                    .child(id)
+                    .update({'description': updatecontroller.text.toString()})
+                    .then((value) {
+                      Utils().error("Updated");
+                    })
+                    .onError((error, StackTrace) {
+                      Utils().error(error.toString());
+                    });
+                Navigator.of(context).pop();
+              },
+              child: Text("Update"),
+            ),
+          ],
+        );
+      },
     );
   }
 }
