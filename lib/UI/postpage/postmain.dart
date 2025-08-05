@@ -82,6 +82,7 @@ class _SearchMainState extends State<Postmain> {
                             title: Text("Edit"),
                             leading: Icon(Icons.edit),
                             onTap: () {
+                              Navigator.of(context).pop();
                               showMyDialog(title, id);
                             },
                           ),
@@ -90,6 +91,9 @@ class _SearchMainState extends State<Postmain> {
                           child: ListTile(
                             title: Text("Delete"),
                             leading: Icon(Icons.delete),
+                            onTap: () {
+                              showDeleteAlert(id);
+                            },
                           ),
                         ),
                       ],
@@ -158,6 +162,41 @@ class _SearchMainState extends State<Postmain> {
                 Navigator.of(context).pop();
               },
               child: Text("Update"),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Future<void> showDeleteAlert(String id) async {
+    return showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text("Confirmation"),
+          content: Text("Are you sure you want to delete this post?"),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: Text("No"),
+            ),
+            TextButton(
+              onPressed: () {
+                databaseref
+                    .child(id)
+                    .remove()
+                    .then((value) {
+                      Utils().error("Post Deleted");
+                    })
+                    .onError((error, StackTrace) {
+                      Utils().error(error.toString());
+                    });
+                Navigator.of(context).pop();
+              },
+              child: Text("Yes"),
             ),
           ],
         );

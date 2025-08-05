@@ -45,11 +45,12 @@ class _AddpostState extends State<Addpost> {
                 setState(() {
                   loading = true;
                 });
+                final id = DateTime.now().millisecondsSinceEpoch.toString();
                 databaseref
-                    .child(DateTime.now().millisecondsSinceEpoch.toString())
+                    .child(id)
                     .set({
                       'description': postController.text.toString(),
-                      'id': DateTime.now().millisecondsSinceEpoch.toString(),
+                      'id': id,
                     })
                     .then((value) {
                       Utils().error("Post Added");
