@@ -56,13 +56,6 @@ class _AddpostState extends State<Addpost> {
                       setState(() {
                         loading = false;
                       });
-                      Navigator.of(context).pushReplacement(
-                        MaterialPageRoute(
-                          builder: (context) {
-                            return Postmain();
-                          },
-                        ),
-                      );
                     })
                     .onError((error, StackTrace) {
                       Utils().error(error.toString());

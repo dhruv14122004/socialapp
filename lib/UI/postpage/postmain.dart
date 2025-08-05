@@ -12,6 +12,7 @@ class Postmain extends StatefulWidget {
 
 class _SearchMainState extends State<Postmain> {
   final databaseref = FirebaseDatabase.instance.ref('posts');
+  final searchfilter = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
@@ -23,13 +24,61 @@ class _SearchMainState extends State<Postmain> {
       ),
       body: Column(
         children: [
+          SizedBox(height: 10),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: TextFormField(
+              controller: searchfilter,
+              cursorColor: Colors.white,
+              style: TextStyle(color: Colors.white),
+              decoration: InputDecoration(
+                hintText: "Search",
+                hintStyle: TextStyle(color: Colors.white),
+                prefixIcon: Icon(Icons.search),
+                prefixIconColor: Colors.white,
+                fillColor: Colors.grey.shade700,
+                filled: true,
+                enabledBorder: OutlineInputBorder(
+                  borderSide: BorderSide(
+                    color: Colors.black,
+                    width: 2,
+                    strokeAlign: BorderSide.strokeAlignCenter,
+                  ),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderSide: BorderSide(
+                    color: Colors.black,
+                    width: 2,
+                    strokeAlign: BorderSide.strokeAlignCenter,
+                  ),
+                ),
+              ),
+              onChanged: (String value) {
+                setState(() {});
+              },
+            ),
+          ),
           Expanded(
             child: FirebaseAnimatedList(
               query: databaseref,
               itemBuilder: (context, snapshot, animation, index) {
-                return ListTile(
-                  title: Text(snapshot.child('description').value.toString()),
-                );
+                final title = snapshot.child('description').value.toString();
+
+                if (searchfilter.text.isEmpty) {
+                  return ListTile(
+                    title: Text(snapshot.child('description').value.toString()),
+                    subtitle: Text(snapshot.child('id').value.toString()),
+                  );
+                } else if (title.toLowerCase().toString().contains(
+                  searchfilter.text.toLowerCase().toString(),
+                )) {
+                  return ListTile(
+                    title: Text(snapshot.child('description').value.toString()),
+                    subtitle: Text(snapshot.child('id').value.toString()),
+                  );
+                } else {
+                  return Container();
+                }
               },
             ),
           ),
@@ -52,3 +101,28 @@ class _SearchMainState extends State<Postmain> {
     );
   }
 }
+
+
+
+          // Expanded(
+          //   child: StreamBuilder(
+          //     stream: databaseref.onValue,
+          //     builder: (context, AsyncSnapshot<DatabaseEvent> snapshot) {
+          //       if (snapshot.hasData) {
+          //         Map<dynamic, dynamic> map =
+          //             snapshot.data!.snapshot.value as dynamic;
+          //         List<dynamic> list = [];
+          //         list.clear();
+          //         list = map.values.toList();
+          //         return ListView.builder(
+          //           itemCount: snapshot.data!.snapshot.children.length,
+          //           itemBuilder: (context, index) {
+          //             return ListTile(title: Text(list[index]['description']), subtitle: Text(list[index]['id']),);
+          //           },
+          //         );
+          //       } else {
+          //         return Center(child: CircularProgressIndicator());
+          //       }
+          //     },
+          //   ),
+          // ),
