@@ -1,17 +1,21 @@
-import 'package:campusconnect/UI/splash/splashscreen.dart';
-import 'package:device_preview/device_preview.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-// import 'app.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
-import 'package:firebase_core/firebase_core.dart';
-import 'firebase_options.dart';
-void main() async{
+import 'routes/app_routes.dart';
+import 'theme/app_theme.dart';
+import 'theme/theme_controller.dart';
+import 'utils/constants.dart';
+import 'screens/auth/login_screen.dart';
+import 'screens/home/home_screen.dart';
+
+Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-await Firebase.initializeApp(
-  options: DefaultFirebaseOptions.currentPlatform,
-);
-runApp(const MyApp());
+  await Supabase.initialize(
+    url: AppConst.supabaseUrl,
+    anonKey: AppConst.supabaseAnonKey,
+  );
+  runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
@@ -19,38 +23,36 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      locale: DevicePreview.locale(context),
-      builder: DevicePreview.appBuilder,
-      home: Splashscreen(),
-      theme: ThemeData(useMaterial3: true).copyWith(
-        appBarTheme: AppBarTheme(
-          color: Color(0xFFFAFAFA),
-          titleTextStyle: TextStyle(color: Color(0xFF2D3748)),
-          iconTheme: IconThemeData(color: Color(0xFF4A5568)),
-          actionsIconTheme: IconThemeData(color: Color(0xFF4A5568)),
+    final light = buildLightTheme();
+    return ValueListenableBuilder<ThemeMode>(
+      valueListenable: ThemeController.instance.mode,
+      builder: (context, mode, _) => MaterialApp(
+        debugShowCheckedModeBanner: false,
+        title: AppConst.appName,
+        theme: light.copyWith(
+          textTheme: GoogleFonts.interTextTheme(light.textTheme),
         ),
-        textTheme: GoogleFonts.poppinsTextTheme().copyWith(
-          titleLarge: GoogleFonts.poppins(
-            fontWeight: FontWeight.w700,
-            fontSize: 25,
-            color: Color(0xFF2D3748),
-          ),
-          titleMedium: GoogleFonts.poppins(
-            fontWeight: FontWeight.w600,
-            fontSize: 20,
-            color: Color(0xFF4A5568),
-          ),
-          titleSmall: GoogleFonts.poppins(
-            fontWeight: FontWeight.w400,
-            fontSize: 14,
-            color: Color(0xFF2D3748),
-          ),
-        ),
-        scaffoldBackgroundColor: Colors.grey.shade300,
-        iconTheme: IconThemeData(color: Color(0xFF4A5568)),
+        darkTheme: ThemeData.dark(),
+        themeMode: mode,
+        onGenerateRoute: AppRoutes.onGenerateRoute,
+        home: const _SessionGate(),
       ),
+    );
+  }
+}
+
+class _SessionGate extends StatelessWidget {
+  const _SessionGate();
+
+  @override
+  Widget build(BuildContext context) {
+    return StreamBuilder<AuthState>(
+      stream: Supabase.instance.client.auth.onAuthStateChange,
+      builder: (context, snapshot) {
+        final session = Supabase.instance.client.auth.currentSession;
+        if (session == null) return const LoginScreen();
+        return const HomeScreen();
+      },
     );
   }
 }
