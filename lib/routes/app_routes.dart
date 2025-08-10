@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../screens/auth/login_screen.dart';
 import '../screens/auth/signup_screen.dart';
-import '../screens/home/home_screen.dart';
+import '../screens/main_screen.dart';
 import '../screens/home/post_detail_screen.dart';
 import '../screens/post/create_post_screen.dart';
 import '../screens/chat/chat_list_screen.dart';
@@ -27,7 +27,7 @@ class AppRoutes {
       case signup:
         return MaterialPageRoute(builder: (_) => const SignupScreen());
       case home:
-        return MaterialPageRoute(builder: (_) => const HomeScreen());
+        return MaterialPageRoute(builder: (_) => const MainScreen());
       case postDetail:
         return MaterialPageRoute(builder: (_) => const PostDetailScreen());
       case createPost:

@@ -1,6 +1,19 @@
 flutter_native_splash:
   android: true
-  ios : true
-  web : true
+  ios: true
+  web: true
 
-  colors.
+  # Background color - using your aqua theme
+  color: "#E5FCFC"
+  
+  # Path to your logo image
+  image: "assets/images/mainogo/image.png"
+  
+  # Logo centered on screen
+  android_gravity: center
+  ios_content_mode: center
+  
+  # Splash screen will show your logo on aqua background
+  android_12:
+    image: "assets/images/mainogo/image.png"
+    color: "#E5FCFC"

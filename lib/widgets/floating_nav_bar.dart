@@ -1,74 +1,66 @@
 import 'package:flutter/material.dart';
-import '../theme/app_theme.dart';
 
 class FloatingNavBar extends StatelessWidget {
   final int currentIndex;
   final ValueChanged<int> onTap;
-  final VoidCallback onFab;
 
   const FloatingNavBar({
     super.key,
     required this.currentIndex,
     required this.onTap,
-    required this.onFab,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Stack(
-      alignment: Alignment.bottomCenter,
-      children: [
-        Container(height: 72),
-        Positioned(
-          bottom: 10,
-          left: 16,
-          right: 16,
-          child: Container(
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(24),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.1),
-                  blurRadius: 12,
-                  offset: const Offset(0, 6),
-                ),
-              ],
+    return Positioned(
+      bottom: 20,
+      left: 20,
+      right: 20,
+      child: Container(
+        height: 65,
+        decoration: BoxDecoration(
+          color: Colors.black,
+          borderRadius: BorderRadius.circular(35),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.3),
+              blurRadius: 20,
+              offset: const Offset(0, 8),
             ),
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 10),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                _NavIcon(
-                  icon: Icons.home_rounded,
-                  active: currentIndex == 0,
-                  onTap: () => onTap(0),
-                ),
-                _NavIcon(
-                  icon: Icons.chat_bubble_rounded,
-                  active: currentIndex == 1,
-                  onTap: () => onTap(1),
-                ),
-                const SizedBox(width: 56),
-                _NavIcon(
-                  icon: Icons.person_rounded,
-                  active: currentIndex == 2,
-                  onTap: () => onTap(2),
-                ),
-              ],
+          ],
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            _NavIcon(
+              icon: Icons.home_rounded,
+              active: currentIndex == 0,
+              onTap: () => onTap(0),
             ),
-          ),
+            _NavIcon(
+              icon: Icons.search_rounded,
+              active: currentIndex == 1,
+              onTap: () => onTap(1),
+            ),
+            _NavIcon(
+              icon: Icons.chat_bubble_rounded,
+              active: currentIndex == 2,
+              onTap: () => onTap(2),
+            ),
+            _NavIcon(
+              icon: Icons.favorite_rounded,
+              active: currentIndex == 3,
+              onTap: () => onTap(3),
+            ),
+            _NavIcon(
+              icon: Icons.settings_rounded,
+              active: currentIndex == 4,
+              onTap: () => onTap(4),
+            ),
+          ],
         ),
-        Positioned(
-          bottom: 26,
-          child: FloatingActionButton.large(
-            onPressed: onFab,
-            heroTag: 'create-post',
-            backgroundColor: AppColors.royalBlue,
-            child: const Icon(Icons.add_circle_rounded, size: 36),
-          ),
-        ),
-      ],
+      ),
     );
   }
 }
@@ -88,10 +80,14 @@ class _NavIcon extends StatelessWidget {
   Widget build(BuildContext context) {
     return InkWell(
       onTap: onTap,
-      child: Icon(
-        icon,
-        color: active ? AppColors.royalBlue : Colors.grey,
-        size: 28,
+      borderRadius: BorderRadius.circular(20),
+      child: Container(
+        padding: const EdgeInsets.all(12),
+        child: Icon(
+          icon,
+          color: active ? Colors.white : Colors.grey.shade400,
+          size: 24,
+        ),
       ),
     );
   }
