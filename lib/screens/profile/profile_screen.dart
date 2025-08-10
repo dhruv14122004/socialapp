@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../../theme/theme_controller.dart';
 import '../../services/auth_service.dart';
 import '../../routes/app_routes.dart';
 
@@ -44,14 +43,6 @@ class ProfileScreen extends StatelessWidget {
           const Divider(height: 32),
           const Text('Settings'),
           const SizedBox(height: 8),
-          ValueListenableBuilder(
-            valueListenable: ThemeController.instance.mode,
-            builder: (context, mode, _) => SwitchListTile(
-              title: const Text('Dark mode'),
-              value: mode == ThemeMode.dark,
-              onChanged: (v) => ThemeController.instance.setDark(v),
-            ),
-          ),
           ListTile(
             leading: const Icon(Icons.logout_rounded),
             title: const Text('Logout'),

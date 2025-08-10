@@ -61,6 +61,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
                 child: const Text('Submit'),
               ),
             ),
+            SizedBox(height: 20,)
           ],
         ),
       ),

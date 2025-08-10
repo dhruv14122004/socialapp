@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../routes/app_routes.dart';
 import '../../utils/validators.dart';
+import '../../utils/constants.dart';
 import '../../services/auth_service.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -33,11 +34,15 @@ class _LoginScreenState extends State<LoginScreen> {
         email: _email.text.trim(),
         password: _password.text.trim(),
       );
-      if (mounted) Navigator.pushReplacementNamed(context, AppRoutes.home);
+      if (mounted) {
+        Navigator.pushReplacementNamed(context, AppRoutes.home);
+      }
     } catch (e) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(e.toString())));
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(e.toString())));
+      }
     } finally {
       if (mounted) setState(() => _loading = false);
     }
@@ -46,20 +51,25 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('hotline',)),
-      body: Form(
-        key: _formKey,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20),
+      appBar: AppBar(title: Text(AppConst.appName)),
+      body: SingleChildScrollView(
+        padding: EdgeInsets.fromLTRB(
+          20,
+          16,
+          20,
+          16 + MediaQuery.of(context).viewInsets.bottom,
+        ),
+        child: Form(
+          key: _formKey,
           child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Spacer(),
-              Text("Welcome", style: TextStyle(
-                fontSize: 32,
-                fontWeight: FontWeight.bold
-              ),),
-              Spacer(),
+              const SizedBox(height: 48),
+              const Text(
+                "Welcome",
+                style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 24),
               TextFormField(
                 controller: _email,
                 decoration: const InputDecoration(labelText: 'Email'),
@@ -72,22 +82,47 @@ class _LoginScreenState extends State<LoginScreen> {
                 decoration: const InputDecoration(labelText: 'Password'),
                 validator: Validators.password,
               ),
+              const SizedBox(height: 40),
+              SizedBox(
+                height: 50,
+                width: double.infinity,
+                child: FilledButton(
+                  onPressed: _loading ? null : _submit,
+                  child: _loading
+                      ? const CircularProgressIndicator()
+                      : const Text('Login'),
+                ),
+              ),
               const SizedBox(height: 20),
-              FilledButton(
-                onPressed: _loading ? null : _submit,
-                child: _loading
-                    ? const CircularProgressIndicator()
-                    : const Text('Login'),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text("Don't have an Account?"),
+                  TextButton(
+                    onPressed: () => Navigator.pushReplacementNamed(
+                      context,
+                      AppRoutes.signup,
+                    ),
+                    child: const Text('Create account'),
+                  ),
+                ],
               ),
-              TextButton(
-                onPressed: () => Navigator.pushNamed(context, AppRoutes.signup),
-                child: const Text('Don\'t have an Account? Create account'),
+              const SizedBox(height: 50),
+              Center(
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Text('Powered by Supabase'),
+                    const SizedBox(width: 8),
+                    Image.network(
+                      'https://avatars.githubusercontent.com/u/54469796?s=200&v=4',
+                      height: 18,
+                      width: 18,
+                    ),
+                  ],
+                ),
               ),
-              Spacer(),
-              const SizedBox(height: 40),
-              const Center(child: Text('Powered by Supabase')),
-              const SizedBox(height: 40),
-          
+              const SizedBox(height: 20),
             ],
           ),
         ),

@@ -1,5 +1,5 @@
-name: campusconnect
-description: "A new Flutter project."
+name: hotlines
+description: "A college social media platform for JKLU students."
 # The following line prevents the package from being accidentally published to
 # pub.dev using `flutter pub publish`. This is preferred for private packages.
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
@@ -52,6 +52,28 @@ dev_dependencies:
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
   flutter_lints: ^5.0.0
+  flutter_launcher_icons: ^0.13.1
+
+# Native splash screen configuration
+flutter_native_splash:
+  android: true
+  ios: true
+  web: true
+  color: "#E5FCFC"
+  image: "assets/images/mainogo/image.png"
+  android_gravity: center
+  ios_content_mode: center
+  android_12:
+    image: "assets/images/mainogo/image.png"
+    color: "#E5FCFC"
+
+# App icon configuration
+flutter_launcher_icons:
+  android: true
+  ios: true
+  image_path: "assets/images/mainogo/image.png"
+  adaptive_icon_background: "#E5FCFC"
+  adaptive_icon_foreground: "assets/images/mainogo/image.png"
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
@@ -68,6 +90,8 @@ flutter:
   assets:
     - mock_images/
     - mock_images/pfp/
+    - assets/images/
+    - assets/images/mainogo/
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images
