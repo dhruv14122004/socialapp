@@ -17,21 +17,17 @@ class AuthService {
         'Please use your official college email ($allowedDomain)',
       );
     }
+
+    // Sign up with email confirmation required
     final res = await _client.auth.signUp(
       email: email,
       password: password,
       data: {'name': name, 'joined_at': DateTime.now().toIso8601String()},
+      emailRedirectTo: null, // This ensures email confirmation is required
     );
-    final user = res.user;
-    final hasSession = res.session != null;
-    if (user != null && hasSession) {
-      await ensureProfile(
-        userId: user.id,
-        email: email,
-        name: name,
-        isOnline: true,
-      );
-    }
+
+    // Don't create profile until email is verified
+    // The user will need to confirm their email before they can sign in
     return res;
   }
 
@@ -50,6 +46,7 @@ class AuthService {
     );
     final user = res.user;
     if (user != null) {
+      // Only create/update profile after successful sign in (email confirmed)
       await ensureProfile(
         userId: user.id,
         email: email,

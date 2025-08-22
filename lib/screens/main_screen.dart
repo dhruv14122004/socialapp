@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../widgets/post_card.dart';
 import '../models/post_model.dart';
 import '../routes/app_routes.dart';
+import '../services/post_service.dart';
 import 'chat/chat_list_screen.dart';
 import 'profile/profile_screen.dart';
 
@@ -14,7 +15,8 @@ class MainScreen extends StatefulWidget {
 
 class _MainScreenState extends State<MainScreen> {
   int _currentIndex = 0;
-  late final List<PostModel> _samplePosts;
+  List<PostModel> _posts = [];
+  final PostService _postService = PostService();
 
   // Create screens only once and keep them alive
   late final List<Widget> _screens;
@@ -23,36 +25,52 @@ class _MainScreenState extends State<MainScreen> {
   void initState() {
     super.initState();
 
-    // Create sample data once at the MainScreen level
-    _samplePosts = List.generate(
-      6,
-      (i) => PostModel(
-        id: '$i',
-        authorId: 'u1',
-        authorName: 'Student $i',
-        content: 'Sample post #$i for testing',
-        createdAt: DateTime.now().subtract(Duration(minutes: i * 5)),
-        upvotes: (i + 1) * 3,
-        downvotes: i,
-        liked: i % 3 == 0, // Make every 3rd post liked for testing
-      ),
-    );
-
     _screens = [
-      HomeTabScreen(posts: _samplePosts, onLike: _toggleLike),
+      HomeTabScreen(posts: _posts, onLike: _toggleLike, onRefresh: _loadPosts),
       const SearchScreen(),
       const ChatListScreen(),
-      FavoritesScreen(posts: _samplePosts),
+      FavoritesScreen(posts: _posts),
       const ProfileScreen(),
     ];
+
+    _loadPosts();
   }
 
-  void _toggleLike(int index) {
-    setState(() {
-      _samplePosts[index] = _samplePosts[index].copyWith(
-        liked: !_samplePosts[index].liked,
-      );
-    });
+  Future<void> _loadPosts() async {
+    try {
+      final posts = await _postService.fetchPosts();
+      if (mounted) {
+        setState(() {
+          _posts = posts;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error loading posts: ${e.toString()}')),
+        );
+      }
+    }
+  }
+
+  void _toggleLike(int index) async {
+    if (index >= 0 && index < _posts.length) {
+      final post = _posts[index];
+      try {
+        await _postService.toggleLike(postId: post.id);
+
+        // Update local state immediately for UI responsiveness
+        setState(() {
+          _posts[index] = _posts[index].copyWith(liked: !_posts[index].liked);
+        });
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Error updating like: ${e.toString()}')),
+          );
+        }
+      }
+    }
   }
 
   void _onTabTapped(int index) {
@@ -154,8 +172,14 @@ class _MainScreenState extends State<MainScreen> {
 class HomeTabScreen extends StatefulWidget {
   final List<PostModel> posts;
   final Function(int) onLike;
+  final Future<void> Function() onRefresh;
 
-  const HomeTabScreen({super.key, required this.posts, required this.onLike});
+  const HomeTabScreen({
+    super.key,
+    required this.posts,
+    required this.onLike,
+    required this.onRefresh,
+  });
 
   @override
   State<HomeTabScreen> createState() => _HomeTabScreenState();
@@ -219,21 +243,43 @@ class _HomeTabScreenState extends State<HomeTabScreen>
         children: [
           _buildFilterChips(),
           Expanded(
-            child: ListView.builder(
-              padding: EdgeInsets.only(bottom: safeAreaBottom + 95),
-              itemCount: widget.posts.length,
-              // Performance optimizations
-              cacheExtent: 400, // Pre-cache items
-              physics: const ClampingScrollPhysics(),
-              addAutomaticKeepAlives: true,
-              addRepaintBoundaries: true,
-              addSemanticIndexes: false,
-              itemBuilder: (context, i) => PostCard(
-                key: ValueKey('post_$i'), // Add key for better performance
-                post: widget.posts[i],
-                onTap: () => Navigator.pushNamed(context, AppRoutes.postDetail),
-                onLike: () => widget.onLike(i),
-              ),
+            child: RefreshIndicator(
+              onRefresh: widget.onRefresh,
+              child: widget.posts.isEmpty
+                  ? const Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(Icons.post_add, size: 64, color: Colors.grey),
+                          SizedBox(height: 16),
+                          Text(
+                            'No posts yet',
+                            style: TextStyle(fontSize: 18, color: Colors.grey),
+                          ),
+                          Text(
+                            'Be the first to share something!',
+                            style: TextStyle(color: Colors.grey),
+                          ),
+                        ],
+                      ),
+                    )
+                  : ListView.builder(
+                      padding: EdgeInsets.only(bottom: safeAreaBottom + 95),
+                      itemCount: widget.posts.length,
+                      // Performance optimizations
+                      cacheExtent: 400, // Pre-cache items
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      addAutomaticKeepAlives: true,
+                      addRepaintBoundaries: true,
+                      addSemanticIndexes: false,
+                      itemBuilder: (context, i) => PostCard(
+                        key: ValueKey('post_${widget.posts[i].id}'),
+                        post: widget.posts[i],
+                        onTap: () =>
+                            Navigator.pushNamed(context, AppRoutes.postDetail),
+                        onLike: () => widget.onLike(i),
+                      ),
+                    ),
             ),
           ),
         ],

@@ -39,9 +39,18 @@ class _LoginScreenState extends State<LoginScreen> {
       }
     } catch (e) {
       if (mounted) {
+        String errorMessage = e.toString();
+
+        // Handle email not confirmed error
+        if (errorMessage.toLowerCase().contains('email not confirmed') ||
+            errorMessage.toLowerCase().contains('email_not_confirmed')) {
+          errorMessage =
+              'Please check your email and confirm your account before signing in.';
+        }
+
         ScaffoldMessenger.of(
           context,
-        ).showSnackBar(SnackBar(content: Text(e.toString())));
+        ).showSnackBar(SnackBar(content: Text(errorMessage)));
       }
     } finally {
       if (mounted) setState(() => _loading = false);
