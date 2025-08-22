@@ -39,13 +39,21 @@ class _SignupScreenState extends State<SignupScreen> {
     }
     setState(() => _loading = true);
     try {
-      await _auth.signUp(
+      final response = await _auth.signUp(
         email: _email.text.trim(),
         password: _password.text.trim(),
         name: _name.text.trim(),
       );
+
       if (mounted) {
-        Navigator.pushReplacementNamed(context, AppRoutes.home);
+        // Check if user needs email confirmation
+        if (response.user != null && response.session == null) {
+          // Show email verification dialog
+          _showEmailVerificationDialog();
+        } else if (response.session != null) {
+          // User is signed in (shouldn't happen with email confirmation enabled)
+          Navigator.pushReplacementNamed(context, AppRoutes.home);
+        }
       }
     } catch (e) {
       if (mounted) {
@@ -56,6 +64,50 @@ class _SignupScreenState extends State<SignupScreen> {
     } finally {
       if (mounted) setState(() => _loading = false);
     }
+  }
+
+  void _showEmailVerificationDialog() {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => AlertDialog(
+        title: const Text('Check Your Email'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'We\'ve sent a confirmation email to:',
+              style: TextStyle(fontSize: 16),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              _email.text.trim(),
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 16),
+            const Text(
+              'Please check your email and click the confirmation link to complete your account setup.',
+              style: TextStyle(fontSize: 14),
+            ),
+            const SizedBox(height: 8),
+            const Text(
+              'You can close this dialog and try logging in once you\'ve confirmed your email.',
+              style: TextStyle(fontSize: 14, color: Colors.grey),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop(); // Close dialog
+              Navigator.pushReplacementNamed(context, AppRoutes.login);
+            },
+            child: const Text('Go to Login'),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
