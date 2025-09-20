@@ -1,4 +1,9 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
+import '../../services/post_service.dart';
+import '../../services/storage_service.dart';
+import '../../utils/constants.dart';
 
 class CreatePostScreen extends StatefulWidget {
   const CreatePostScreen({super.key});
@@ -9,12 +14,87 @@ class CreatePostScreen extends StatefulWidget {
 
 class _CreatePostScreenState extends State<CreatePostScreen> {
   final _controller = TextEditingController();
+  final _postService = PostService();
+  final _storageService = StorageService();
+  final _imagePicker = ImagePicker();
   bool _anonymous = false;
+  bool _isLoading = false;
+  File? _selectedImage;
 
   @override
   void dispose() {
     _controller.dispose();
     super.dispose();
+  }
+
+  Future<void> _pickImage() async {
+    try {
+      final XFile? image = await _imagePicker.pickImage(
+        source: ImageSource.gallery,
+        maxWidth: 1080,
+        maxHeight: 1080,
+        imageQuality: 85,
+      );
+
+      if (image != null) {
+        setState(() {
+          _selectedImage = File(image.path);
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error picking image: ${e.toString()}')),
+        );
+      }
+    }
+  }
+
+  Future<void> _submitPost() async {
+    if (_controller.text.trim().isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please enter some content')),
+      );
+      return;
+    }
+
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      String? mediaUrl;
+      if (_selectedImage != null) {
+        mediaUrl = await _storageService.uploadMedia(
+          _selectedImage!,
+          bucket: AppConst.storageBucketMedia,
+        );
+      }
+      await _postService.createPost(
+        content: _controller.text.trim(),
+        mediaUrl: mediaUrl,
+        anonymous: _anonymous,
+      );
+
+      if (mounted) {
+        Navigator.pop(context, true); // Return true to indicate success
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Post created successfully!')),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error creating post: ${e.toString()}')),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
   }
 
   @override
@@ -33,13 +113,52 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
                 border: OutlineInputBorder(),
               ),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 16),
+
+            // Display selected image
+            if (_selectedImage != null) ...[
+              Container(
+                height: 200,
+                width: double.infinity,
+                decoration: BoxDecoration(
+                  border: Border.all(color: Colors.grey),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Stack(
+                  children: [
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(8),
+                      child: Image.file(
+                        _selectedImage!,
+                        width: double.infinity,
+                        height: 200,
+                        fit: BoxFit.cover,
+                      ),
+                    ),
+                    Positioned(
+                      top: 8,
+                      right: 8,
+                      child: IconButton(
+                        onPressed: () => setState(() => _selectedImage = null),
+                        icon: const Icon(Icons.close),
+                        style: IconButton.styleFrom(
+                          backgroundColor: Colors.black54,
+                          foregroundColor: Colors.white,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 16),
+            ],
+
             Row(
               children: [
                 OutlinedButton.icon(
-                  onPressed: () {},
-                  icon: const Icon(Icons.attach_file_rounded),
-                  label: const Text('Add media'),
+                  onPressed: _isLoading ? null : _pickImage,
+                  icon: const Icon(Icons.image_rounded),
+                  label: const Text('Add photo'),
                 ),
                 const Spacer(),
                 Row(
@@ -47,7 +166,9 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
                     const Text('Post anonymously'),
                     Switch(
                       value: _anonymous,
-                      onChanged: (v) => setState(() => _anonymous = v),
+                      onChanged: _isLoading
+                          ? null
+                          : (v) => setState(() => _anonymous = v),
                     ),
                   ],
                 ),
@@ -57,11 +178,17 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
             SizedBox(
               width: double.infinity,
               child: FilledButton(
-                onPressed: () {},
-                child: const Text('Submit'),
+                onPressed: _isLoading ? null : _submitPost,
+                child: _isLoading
+                    ? const SizedBox(
+                        height: 20,
+                        width: 20,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : const Text('Submit'),
               ),
             ),
-            SizedBox(height: 20,)
+            const SizedBox(height: 20),
           ],
         ),
       ),

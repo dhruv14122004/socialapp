@@ -7,32 +7,41 @@ class PostService {
   Future<List<PostModel>> fetchPosts({String filter = 'latest'}) async {
     final currentUser = _client.auth.currentUser;
 
-    // Fetch posts with likes information
-    final query = _client
-        .from('posts')
-        .select('''
-          *,
-          likes(user_id)
-        ''')
-        .order('created_at', ascending: false);
+    try {
+      // First, try to fetch posts with likes using a simpler approach
+      final postsData = await _client
+          .from('posts')
+          .select('*')
+          .order('created_at', ascending: false);
 
-    final data = await query;
+      List<PostModel> posts = [];
 
-    return (data as List<dynamic>).map((postData) {
-      final post = postData as Map<String, dynamic>;
-      final likes = post['likes'] as List<dynamic>? ?? [];
+      for (var postData in postsData) {
+        // For each post, check if current user liked it
+        bool isLiked = false;
+        if (currentUser != null) {
+          try {
+            final likeData = await _client
+                .from('likes')
+                .select('id')
+                .eq('user_id', currentUser.id)
+                .eq('post_id', postData['id'])
+                .maybeSingle();
+            isLiked = likeData != null;
+          } catch (e) {
+            isLiked = false;
+          }
+        }
 
-      // Check if current user liked this post
-      final isLiked =
-          currentUser != null &&
-          likes.any((like) => like['user_id'] == currentUser.id);
+        // Add liked field to post data
+        postData['liked'] = isLiked;
+        posts.add(PostModel.fromJson(postData));
+      }
 
-      // Remove likes from post data and add liked field
-      post.remove('likes');
-      post['liked'] = isLiked;
-
-      return PostModel.fromJson(post);
-    }).toList();
+      return posts;
+    } catch (e) {
+      return [];
+    }
   }
 
   Future<void> createPost({
@@ -41,14 +50,25 @@ class PostService {
     bool anonymous = false,
   }) async {
     final user = _client.auth.currentUser!;
-    await _client.from('posts').insert({
-      'author_id': user.id,
-      'author_name': user.userMetadata?['name'],
-      'content': content,
-      'media_url': mediaUrl,
-      'is_anonymous': anonymous,
-      'created_at': DateTime.now().toIso8601String(),
-    });
+
+    // Get user name from metadata or fallback to email prefix
+    String authorName =
+        user.userMetadata?['name'] ??
+        user.email?.split('@').first ??
+        'Anonymous';
+
+    try {
+      await _client.from('posts').insert({
+        'author_id': user.id,
+        'author_name': authorName,
+        'content': content,
+        'media_url': mediaUrl,
+        'is_anonymous': anonymous,
+        'created_at': DateTime.now().toIso8601String(),
+      });
+    } catch (e) {
+      rethrow;
+    }
   }
 
   Future<void> vote(String postId, int delta) async {
