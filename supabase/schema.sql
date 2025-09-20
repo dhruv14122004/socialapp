@@ -97,3 +97,26 @@ begin
   end if;
 end;
 $$ language plpgsql security definer;
+
+-- Create storage bucket for media
+insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+values (
+  'media',
+  'media',
+  true,
+  52428800, -- 50MB limit
+  array['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'video/mp4', 'video/webm']
+) on conflict (id) do nothing;
+
+-- Storage policies for media bucket
+create policy "Authenticated users can upload media" on storage.objects
+for insert with check (bucket_id = 'media' and auth.role() = 'authenticated');
+
+create policy "Anyone can view media" on storage.objects
+for select using (bucket_id = 'media');
+
+create policy "Users can update own media" on storage.objects
+for update using (bucket_id = 'media' and auth.uid()::text = (storage.foldername(name))[1]);
+
+create policy "Users can delete own media" on storage.objects
+for delete using (bucket_id = 'media' and auth.uid()::text = (storage.foldername(name))[1]);

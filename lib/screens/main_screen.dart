@@ -18,23 +18,26 @@ class _MainScreenState extends State<MainScreen> {
   List<PostModel> _posts = [];
   final PostService _postService = PostService();
 
-  // Create screens only once and keep them alive
-  late final List<Widget> _screens;
-
   @override
   void initState() {
     super.initState();
-
-    _screens = [
-      HomeTabScreen(posts: _posts, onLike: _toggleLike, onRefresh: _loadPosts),
-      const SearchScreen(),
-      const ChatListScreen(),
-      FavoritesScreen(posts: _posts),
-      const ProfileScreen(),
-    ];
-
     _loadPosts();
   }
+
+  @override
+  void didUpdateWidget(MainScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // Reload posts when widget updates
+    _loadPosts();
+  }
+
+  List<Widget> get _screens => [
+    HomeTabScreen(posts: _posts, onLike: _toggleLike, onRefresh: _loadPosts),
+    const SearchScreen(),
+    const ChatListScreen(),
+    FavoritesScreen(posts: _posts),
+    const ProfileScreen(),
+  ];
 
   Future<void> _loadPosts() async {
     try {
@@ -121,7 +124,7 @@ class _MainScreenState extends State<MainScreen> {
                   ],
                 ),
                 child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     _buildNavIcon(Icons.home_rounded, 0),
@@ -143,7 +146,16 @@ class _MainScreenState extends State<MainScreen> {
               80, // Reduced from 90 to 80 to match nav bar spacing reduction
         ), // Adjust FAB position too
         child: FloatingActionButton(
-          onPressed: () => Navigator.pushNamed(context, AppRoutes.createPost),
+          onPressed: () async {
+            final result = await Navigator.pushNamed(
+              context,
+              AppRoutes.createPost,
+            );
+            // Refresh posts if a post was created
+            if (result == true) {
+              _loadPosts();
+            }
+          },
           child: const Icon(Icons.add),
         ),
       ),
@@ -157,11 +169,11 @@ class _MainScreenState extends State<MainScreen> {
       onTap: () => _onTabTapped(index),
       borderRadius: BorderRadius.circular(20),
       child: Container(
-        padding: const EdgeInsets.all(12),
+        padding: const EdgeInsets.all(8), // Reduced from 12 to 8
         child: Icon(
           icon,
           color: isActive ? Colors.white : Colors.grey.shade400,
-          size: 24,
+          size: 22, // Reduced from 24 to 22
         ),
       ),
     );
@@ -191,11 +203,6 @@ class _HomeTabScreenState extends State<HomeTabScreen>
 
   @override
   bool get wantKeepAlive => true;
-
-  @override
-  void initState() {
-    super.initState();
-  }
 
   // Create filter chips once
   static const _filterOptions = ['Latest', 'Top', 'Announcements'];
